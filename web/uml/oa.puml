@@ -1,0 +1,57 @@
+@startuml
+autonumber
+title 登录的逻辑设计
+actor 用户
+用户 -> EmployeeController:通过login.jsp提交数据
+EmployeeController->EmployeeServiceImpl:把数据传过去
+EmployeeServiceImpl-> EmployeeMapper:数据传过去
+database 数据库
+EmployeeMapper->数据库:数据传过去
+数据库->EmployeeMapper:查询的结果
+EmployeeMapper->EmployeeServiceImpl:Employee对象
+EmployeeServiceImpl->EmployeeController:Employee对象
+EmployeeController->用户:跳转到main页面
+@enduml
+/'----------------退出----------------'/
+
+@startuml
+autonumber
+title 退出系统的逻辑
+actor 用户
+用户->退出按钮:点击
+退出按钮->EmployeeController:访问里面的loginOut方法
+EmployeeController->销毁session对象并跳转页面到login页面
+@enduml
+@enduml
+/'----------------部门添加----------------'/
+
+@startuml
+autonumber
+title 部门添加的逻辑
+actor 用户
+用户->DeptController:在deptAdd页面中提交数据
+DeptController->DeptServiceImpl:把提交的数据传过去
+DeptServiceImpl->DeptMapper:把提交的数据传过去
+database 数据库
+DeptMapper->数据库:把提交的数据传过去
+数据库->DeptMapper:返回整数:1
+DeptMapper->DeptServiceImpl:返回整数:1
+DeptServiceImpl->DeptController::返回整数:1
+DeptController->用户:判断1?添加成功:失败
+@enduml
+
+/'----------------部门管理----------------'/
+@startuml
+autonumber
+title 部门管理的逻辑
+actor 用户
+用户->DeptController:点击部门管理按钮
+DeptController->DeptServiceImpl:发起查询所有的部门信息
+DeptServiceImpl->DeptMapper:交给它处理
+database 数据库
+DeptMapper->数据库:发起查询所有的部门信息
+数据库->DeptMapper:List<Dept>
+DeptMapper->DeptServiceImpl:List<Dept>
+DeptServiceImpl->DeptController:List<Dept>
+DeptController->用户:响应给deptList
+@enduml

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <!--当前的配置文件替代myshiro.ini文件-->
+    <!--设置加密参数-->
+    <bean id="hcm" class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+        <property name="hashAlgorithmName" value="md5"/>
+        <property name="hashIterations" value="2"/>
+    </bean>
+    <!-- 注册自定义的Realm,属性credentialsMatcher是MyAuthenRealm父类的父类中的属性 -->
+    <bean id="myRealm" class="com.oa.shiro.MyRealm">
+        <property name="credentialsMatcher" ref="hcm"></property>
+    </bean>
+    <!-- 注册securityManager;属性realms是DefaultWebSecurityManager的间接父类achingSecurityManager中的属性 -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realms" ref="myRealm"></property>
+    </bean>
+
+
+    <!-- 配置shiro的过滤器链 -->
+    <!-- 注册ShiroFilterFactoryBean,id的名称与web.xml中的targetBeanName对应的名字一致 -->
+    <bean id="myShiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <!-- 调用我们配置的权限管理器 -->
+        <property name="securityManager" ref="securityManager" />
+        <!-- 配置我们的登录请求地址 -->
+        <property name="loginUrl" value="/emp/loginShiro" />
+        <!-- 配置我们在登录页登录成功后的跳转地址，如果你访问的是非/login地址，则跳到您访问的地址 -->
+        <property name="successUrl" value="/main" />
+
+        <!-- 权限配置 -->
+        <!-- anon:放行;authc表示访问该地址用户必须身份验证通过，即Subject.isAuthenticated() == true -->
+        <property name="filterChainDefinitions">
+            <value>
+                #需要认证的(拦截),即让shiro框架才处理用户表单提交的数据,authc表示进入表单认证拦截,实际访问的是org.apache.shiro.web.filter.authc.FormAuthenticationFilter
+                /emp/loginShiro=authc
+                #不需要身份认证的(放行),/** 表示放行所有
+                /**=anon
+                #登出(退出系统),会销毁SessionManager中的数据
+                /emp/loginShiroOut=logout
+                #记住我,免登录
+                /main=user
+
+            </value>
+        </property>
+    </bean>
+
+    <!--表单过滤器的自定数据-->
+    <bean id="authc" class="org.apache.shiro.web.filter.authc.FormAuthenticationFilter">
+        <property name="usernameParam" value="empid"></property>
+        <property name="passwordParam" value="pwd"></property>
+    </bean>
+
+    <!--会话管理器-->
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <!--设置session的失效时间:单位是毫秒-->
+        <property name="globalSessionTimeout" value="604800000"></property>
+        <!--自动删除无效的session-->
+        <property name="deleteInvalidSessions" value="true"></property>
+    </bean>
+    <!--配置cookie-->
+    <bean id="simpleCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <!--设置shiro中cookie的名字-->
+        <property name="name" value="rememberMe"></property>
+        <!--设置cookie的有效期-->
+        <property name="maxAge" value="604800000"></property>
+    </bean>
+    <!--配置记住我-->
+    <bean id="rememberMeManager" class="org.apache.shiro.web.mgt.CookieRememberMeManager">
+        <property name="cookie" ref="simpleCookie"></property>
+    </bean>
+
+</beans>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+<!--加载数据库连接配置参数的文件db.properties-->
+    <context:property-placeholder location="classpath:db.properties"></context:property-placeholder>
+
+    <!--DriverManagerDataSource dataSource = new DriverManagerDataSource()-->
+   <!-- <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="url" value="${url}"></property>
+        <property name="username" value="${mysql.username}"></property>
+        <property name="password" value="${password}"></property>
+        <property name="driverClassName" value="${driver}"></property>
+    </bean>-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="url" value="${url}"></property>
+        <property name="username" value="${mysql.username}"></property>
+        <property name="password" value="${password}"></property>
+        <property name="driverClassName" value="${driver}"></property>
+    </bean>
+
+    <!--mybatis是交给spring容器管理,mybatis的启动创建的对象交给spring帮我们管理-->
+    <bean class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"></property>
+        <!--注意配置分页插件放的位置,在SqlSessionFactoryBean中-->
+        <property name="plugins">
+            <array>
+                <!--MyBatis被自动识别这个插件,查询的结果集会自动交给这个插件接管-->
+                <bean class="com.github.pagehelper.PageInterceptor"></bean>
+            </array>
+        </property>
+    </bean>
+
+    <!--扫描***mapper所在的包-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.oa.mapper"></property>
+    </bean>
+
+</beans>
